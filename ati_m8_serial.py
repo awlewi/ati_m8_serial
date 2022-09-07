@@ -1,3 +1,10 @@
+#!/usr/bin/python3
+#
+#   ati_m8_serial.py
+
+#   establishes serial connection to ATI Axia M8 sensor 
+#
+
 import serial
 import time
 import numpy as np
@@ -14,12 +21,36 @@ class atiM8serial:
     ser = serial.Serial()
     force = np.zeros(6)
 
-    def __init__(self, com_num):
+    def __init__(self, com_num=-1):
         """
         opens a serial link to the ATI sensor 
         at com number (linux assumed - /dev/ttyS#)
         does not close the serial port
         """
+        if com_num >= 0 :
+            self.open(com_num)
+        else:
+            print("ATI constructed, serial port needed")
+
+
+    # def __init__(self):
+    #     """
+    #     initialize an empty serial without opening
+    #     need so define a serial port and open before reading
+
+    #     """      
+    #     print("ATI constructed, serial port needed")
+
+
+    def __del__(self):
+        """
+        close the serial port when the program is over
+        """
+        self.ser.close()
+        print("ATI serial closed")  
+
+
+    def open(self, com_num, timeout = 0.01):
         sys = platform.system()
         if sys == 'Linux':
             ser_loc = '/dev/ttyS'
@@ -30,21 +61,19 @@ class atiM8serial:
             print("OS unsupported, please input serial path directly to this function")
 
         self.ser = serial.Serial(ser_loc+str(com_num), 115200)
-        self.ser.timeout = .01
-        print("ATI serial opened")  
+        self.ser.timeout = timeout
+        print("ATI serial opened")
 
-    def __del__(self):
-        """
-        close the serial port when the program is over
-        """
-        self.ser.close()
-        print("ATI serial closed")  
+        self.ser.write(b's')
+
+
 
     def close(self):
         """
-        close the serial port associated with the sensor
+        close the serial port associated with the sensor on destruction
         """
         self.ser.close()
+
 
     def readForce(self):
         """
@@ -80,6 +109,7 @@ class atiM8serial:
             self.force[j]  = val[j]
 
         return self.force
+
 
     def findRate(self, n):
         """
@@ -157,12 +187,4 @@ class atiM8serial:
         return self.zeros
 
 
-# testing script
-np.set_printoptions(precision=3)
-np.set_printoptions(suppress=True)
-force = atiM8serial(3)
-
-#print(force.zero(1000))
-print(force.zero(100))
-force.findRate(100)
 
