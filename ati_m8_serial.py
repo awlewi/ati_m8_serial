@@ -46,11 +46,18 @@ class atiM8serial:
         """
         close the serial port when the program is over
         """
-        self.ser.close()
+        try:
+            print("Force Sensor buffer remaining -- ", self.ser.in_waiting)
+            for x in range(20):
+                self.ser.write(b'e')
+            self.ser.close()
+        except:
+            print(" ")
+
         print("ATI serial closed")  
 
 
-    def open(self, com_num, timeout = 0.01):
+    def open(self, com_num, timeout = None):
         sys = platform.system()
         if sys == 'Linux':
             ser_loc = '/dev/ttyS'
@@ -62,6 +69,9 @@ class atiM8serial:
 
         self.ser = serial.Serial(ser_loc+str(com_num), 115200)
         self.ser.timeout = timeout
+
+        # time.sleep(0.25)  
+        self.clearBuffer()
         print("ATI serial opened")
 
         self.ser.write(b's')
@@ -72,7 +82,16 @@ class atiM8serial:
         """
         close the serial port associated with the sensor on destruction
         """
+        self.clearBuffer()
         self.ser.close()
+
+
+    def clearBuffer(self):  
+        """
+        clear the buffer before reading
+        """
+        #print("clearing force sensor buffer")
+        self.ser.reset_input_buffer()
 
 
     def readForce(self):
@@ -84,6 +103,9 @@ class atiM8serial:
         """
         val = ['']*6
         tries = 0
+
+        #self.ser.write(b's')
+        #time.sleep(0.001)
 
         #try to get a good line of data
         #sometimes readline gets a line with newline or return characters
@@ -173,7 +195,7 @@ class atiM8serial:
         dat = np.zeros((n, 6))
 
         #try to bleed out some garbage lines on start
-        self.ser.write(('s').encode())
+        #self.ser.write(b's')
         for i in range(10):
             self.ser.readline()
 
