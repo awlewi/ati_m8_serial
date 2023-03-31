@@ -74,7 +74,10 @@ class atiM8serial:
         self.clearBuffer()
         print("ATI serial opened")
 
-        self.ser.write(b's')
+        #self.ser.write(b's')
+        #self.ser.write(b'r')
+
+
 
 
 
@@ -109,8 +112,32 @@ class atiM8serial:
 
         #try to get a good line of data
         #sometimes readline gets a line with newline or return characters
+        # while True:
+        #     tries = tries + 1
+        #     try:
+        #         cc =  str(self.ser.readline().decode("utf-8"))
+        #         for j in range(6):      
+        #             idx = 1 + j*4
+        #             val[j] = cc[idx : idx + 4]
+        #             val[j] = int(val[j], 16)  / 15.258789
+        #     except Exception as ex:
+        #         if(tries > 5):
+        #             print(ex)
+        #             print(tries)
+        #             self.ser.reset_input_buffer()
+        #             print("buffer cleared \n")
+        #             time.sleep(0.01)
+        #     else:
+        #         break
+        # #copy good data into dat struct            
+        # for j in range(6):      
+        #     self.force[j]  = val[j]
+
+        # return self.force
+        self.ser.write(b'r')
         while True:
             tries = tries + 1
+            
             try:
                 cc =  str(self.ser.readline().decode("utf-8"))
                 for j in range(6):      
