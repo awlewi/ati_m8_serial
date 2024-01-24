@@ -48,8 +48,8 @@ class atiM8serial:
         """
         try:
             print("Force Sensor buffer remaining -- ", self.ser.in_waiting)
-            for x in range(20):
-                self.ser.write(b'e')
+            # for x in range(20):
+            #     self.ser.write(b'e')
             self.ser.close()
         except:
             print(" ")
@@ -96,6 +96,9 @@ class atiM8serial:
         #print("clearing force sensor buffer")
         self.ser.reset_input_buffer()
 
+    def startRead(self):
+        self.ser.write(b'r')
+
 
     def readForce(self):
         """
@@ -134,7 +137,7 @@ class atiM8serial:
         #     self.force[j]  = val[j]
 
         # return self.force
-        self.ser.write(b'r')
+        
         while True:
             tries = tries + 1
             
@@ -143,7 +146,8 @@ class atiM8serial:
                 for j in range(6):      
                     idx = 1 + j*4
                     val[j] = cc[idx : idx + 4]
-                    val[j] = int(val[j], 16)  / 15.258789
+                    val[j] = twos_comp(int(val[j],16), 16)
+                    val[j] = val[j] / 15.258789
             except Exception as ex:
                 if(tries > 5):
                     print(ex)
@@ -236,4 +240,12 @@ class atiM8serial:
         return self.zeros
 
 
+
+    
+    
+def twos_comp(val, bits):
+    """compute the 2's complement of int value val"""
+    if (val & (1 << (bits - 1))) != 0: # if sign bit is set e.g., 8bit: 128-255
+        val = val - (1 << bits)        # compute negative value
+    return val                         # return positive value as is
 
